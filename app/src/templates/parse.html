@@ -1,0 +1,16 @@
+{% extends "bootstrap_base.html" %}
+{% import 'bootstrap_wtf.html' as wtf %}
+
+{% block content %}
+<h1 class="mb-3 mt-3">Parse and transfer</h1>
+
+<form action="{{ url_for('src.parse') }}" method="POST" enctype="multipart/form-data">
+    {{ form.hidden_tag() }}
+
+    {{ wtf.form_field(form.link) }}
+    {{ wtf.form_field(form.file) }}
+
+    {{ wtf.form_field(form.submit) }}
+</form>
+
+{% endblock %}
