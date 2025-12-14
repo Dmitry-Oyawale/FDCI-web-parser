@@ -1,0 +1,202 @@
+body {
+    margin: 0px 1px 1px 0px;
+    padding: 1px;
+    font-family: Tahoma;
+    text-align: left;
+    font-size: 18px;
+}
+
+.posttable { 
+    width : 100%;
+    margin: 0px;
+}
+
+.nav-item {
+    transition: 0.2s;
+    opacity: 100%;
+    font-size: 18px;
+}
+
+.nav-item:hover {
+    transition: 0.2s;
+    background: #718b9e;
+}
+
+.posttitle {
+    text-align: center;    
+    font-size: 18px;
+    font-style: oblique;
+    font-family: 'Times New Roman', Times, serif;
+    font-weight: bold;
+    margin: 5px;
+    padding: 5px;
+}
+
+.postmessage {
+    padding: 3px;
+    font-style: normal;
+    font-family: 'Times New Roman', Times, serif;
+}
+
+.postlist {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+.post-box {
+    display: flex;
+    vertical-align: middle;
+    background-color: #f2f2f2;
+    width: 32%;
+    margin: 8px;
+    padding: 5px;
+}
+
+.useritem{
+    text-align: center;
+    padding: 3px;
+    margin: 4px 3px 4px 3px;
+    color: crimson; 
+    text-transform: uppercase;
+}
+
+.tagitem {
+    text-align: center;
+    margin: 2px;
+    padding: 2px;  
+    border: 1px solid gray;
+    background: #f6f6f6;
+}
+
+.btn-wide {
+    padding: 0.45rem 1.1rem;
+}
+
+.navbar .nav-link {
+    display: inline-flex;
+    align-items: center;
+
+    height: auto;
+
+    border-radius: 0.25rem;
+    color: #fff;
+    text-decoration: none;
+    background-color: transparent;
+    border: 1px solid rgba(255,255,255,0.0);
+    font-size: 0.95rem;
+}
+
+
+.navbar .nav-link.active {
+  background-color: #ffffff;
+  color: #040562;
+}
+
+.navbar .navbar-brand {
+    display: inline-flex;
+    align-items: center;
+    height: auto;
+    border-radius: 0.25rem;
+    color: #fff;
+    text-decoration: none;
+    background-color: transparent;
+    border: 1px solid rgba(255,255,255,0.0);
+    font-size: 0.95rem;
+}
+
+
+.navbar .navbar-brand.active {
+  background-color: #ffffff;
+  color: #040562;
+}
+
+.navbar .nav-link:hover,
+.navbar .navbar-brand:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+}
+
+.btn-add {
+    background-color: #0099CC;
+    border-color: #0099CC;
+    color: white;
+    font-weight: 500;
+}
+
+.btn-add:hover {
+    background-color: #007da8;
+    border-color: #007da8;
+    color: white;
+}
+
+.btn-delete {
+    background-color: #F9C846;
+    border-color: #F9C846;
+    color: #333;
+    font-weight: 500;
+}
+
+.btn-delete:hover {
+    background-color: #e0b23f;
+    border-color: #e0b23f;
+    color: #222;
+}
+
+.btn-pending {
+    background-color: #CAF0F8;
+    border-color: #0099CC;
+    color: #333;
+    font-weight: 500;
+}
+
+.btn-pending:hover {
+    background-color: #a5c6cc;
+    color: #000;
+}
+
+.bg-approved {
+    background-color: #0099CC;
+    color: white;
+    font-weight: 500;
+}
+
+.bg-rejected {
+    background-color: #F9C846;
+    color: #333;
+    font-weight: 500;
+}
+
+.bg-pending {
+    background-color: #bebebe;
+    color: #333;
+    font-weight: 500;
+}
+
+.navbar .brand-link {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.navbar .brand-link.active {
+    background: #ffffff;
+    color: #040562;
+    border-radius: 8px;
+    padding: 6px 12px;
+}
+
+.compact-multi {
+    width: 150px;
+    max-width: 150px;
+}
+
+.multiselect-container .dropdown-item,
+.multiselect-container .form-check-label {
+    max-width: 150px;
+    white-space: normal;
+    word-wrap: break-word;
+}
+
+.filter-label {
+    font-size: 0.95rem;
+}
