@@ -13,6 +13,34 @@ from openpyxl import load_workbook
 from werkzeug.utils import secure_filename
 import os
 from io import StringIO
+from playwright.sync_api import sync_playwright, TimeoutError as PWTimeoutError
+
+def get_rendered_html(url: str) -> str:
+    with sync_playwright() as p:
+        browser = p.chromium.launch(headless=True)
+        page = browser.new_page(user_agent="Mozilla/5.0")
+
+        page.route("**/*", lambda route: route.abort()
+                   if route.request.resource_type in ("image", "media", "font")
+                   else route.continue_())
+
+        page.goto(url, wait_until="domcontentloaded", timeout=60000)
+
+        selector = "div#jumptocontent.teacher-page-content"
+        page.wait_for_selector(selector, timeout=60000)
+
+        page.wait_for_function(
+            """(sel) => {
+                const el = document.querySelector(sel);
+                return el && el.innerText && el.innerText.trim().length > 50;
+            }""",
+            arg=selector,
+            timeout=60000
+        )
+
+        html = page.content()
+        browser.close()
+        return html
 
 
 @src.route('/', methods=['GET', 'POST'])
@@ -27,20 +55,21 @@ def parse():
         if form.link.data and form.file.data:
 
             url = form.link.data
-            try:
-                load_web_page = requests.get(url, timeout=20)
-                load_web_page.raise_for_status()
-            except requests.RequestException as e:
-                flash(f"Could not fetch that URL: {e}", "warning")
-                return redirect(url_for("src.parse"))
-            soup_page_parser = BeautifulSoup(load_web_page.content, 'html.parser')
-            target_table = soup_page_parser.find("table", {"class": "datatable"})
-            if target_table is None:
-                flash('Could not find a table with class="datatable".', 'warning')
-                return redirect(url_for('src.parse'))
-            data_frame = pandas.read_html(StringIO(str(target_table)))[0] #extract from first table found with that name
-            print(data_frame.head(5))
+            rendered_html = get_rendered_html(url)
+            soup = BeautifulSoup(rendered_html, "html.parser")
 
+            target_div = soup.select_one("div#jumptocontent.teacher-page-content")
+            if not target_div or not target_div.get_text(strip=True):
+                target_div = soup.select_one("div.teacher-page-content")
+
+            if not target_div:
+                flash("Could not find lesson content after render.", "warning")
+                return redirect(url_for("src.parse"))
+            
+            all_text = target_div.get_text(separator="\n", strip=True)
+            lines = [line for line in all_text.split("\n") if line.strip()]
+            data_frame = pandas.DataFrame({"Text": lines})
+            print(data_frame.head(5))
             
             upload = form.file.data
             filename = secure_filename(upload.filename)
