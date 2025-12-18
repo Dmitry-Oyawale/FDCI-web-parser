@@ -14,6 +14,10 @@ from werkzeug.utils import secure_filename
 import os
 from io import StringIO
 from playwright.sync_api import sync_playwright, TimeoutError as PWTimeoutError
+from openpyxl.styles import Font
+
+BIG = Font(size=14, bold=True)
+SMALL = Font(size=11)
 
 def get_rendered_html(url: str) -> str:
     with sync_playwright() as p:
@@ -46,7 +50,7 @@ def get_rendered_html(url: str) -> str:
 @src.route('/', methods=['GET', 'POST'])
 @src.route('/index', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+    return redirect(url_for('src.parse'))
 
 @src.route('/parse', methods=['GET', 'POST'])
 def parse():   
@@ -66,25 +70,38 @@ def parse():
                 flash("Could not find lesson content after render.", "warning")
                 return redirect(url_for("src.parse"))
             
-            all_text = target_div.get_text(separator="\n", strip=True)
-            lines = [line for line in all_text.split("\n") if line.strip()]
-            data_frame = pandas.DataFrame({"Text": lines})
+            blocks = []
+            for el in target_div.select("h1,h2,h3,h4,h5,h6,p,li"):
+                text = el.get_text(" ", strip=True)
+                if not text:
+                    continue
+
+                is_big = el.name in {"h1", "h2", "h3", "h4", "h5", "h6"}
+                if el.name == "li":
+                    text = f"• {text}"
+
+                blocks.append({"Text": text, "IsBig": is_big})
+
+            if not blocks:
+                flash("No readable text blocks found.", "warning")
+                return redirect(url_for("src.parse"))
+
+            data_frame = pandas.DataFrame(blocks)
             print(data_frame.head(5))
-            
+
             upload = form.file.data
             filename = secure_filename(upload.filename)
 
             if not filename.lower().endswith(".xlsx"):
                 flash("Please upload an .xlsx file.", "warning")
                 return redirect(url_for("src.parse"))
-            
+
             upload_dir = os.path.join(current_app.instance_path, "uploads")
             os.makedirs(upload_dir, exist_ok=True)
             unique_name = f"{uuid.uuid4().hex}_{filename}"
 
             save_path = os.path.join(upload_dir, unique_name)
             upload.save(save_path)
-
 
             sheet_name = "Sheet1"
 
@@ -96,11 +113,33 @@ def parse():
 
             is_empty = (ws.max_row == 1 and ws.max_column == 1 and ws["A1"].value is None)
             start_row = 1 if is_empty else ws.max_row + 1
-
+            
             with pandas.ExcelWriter(save_path, engine="openpyxl", mode="a", if_sheet_exists="overlay") as writer:
-                data_frame.to_excel(writer, sheet_name=sheet_name, index=False, header=(start_row == 1), startrow=start_row-1)
+                data_frame.to_excel(
+                    writer,
+                    sheet_name=sheet_name,
+                    index=False,
+                    header=(start_row == 1),
+                    startrow=start_row - 1
+                )
+
+            wb = load_workbook(save_path)
+            ws = wb[sheet_name]
+
+            header_rows = 1 if (start_row == 1) else 0
+            first_data_row = start_row + header_rows
+            last_data_row = first_data_row + len(data_frame) - 1
+
+            for r in range(first_data_row, last_data_row + 1):
+                is_big = bool(ws.cell(row=r, column=2).value)
+                ws.cell(row=r, column=1).font = BIG if is_big else SMALL
+
+            ws.delete_cols(2)  
+
+            wb.save(save_path)
 
             return send_file(save_path, as_attachment=True, download_name=filename)
+
 
         else: 
             flash('Please provide both a link and file.', 'warning')
